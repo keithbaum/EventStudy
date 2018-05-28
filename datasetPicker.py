@@ -12,7 +12,7 @@ def pickDatasets( df, numberOfSamples, numberOfAssets, numberOfIterations ):
     for i in range(numberOfIterations):
         datasets.append( df.iloc[ samplePicker[i], assetPicker[i] ] )
 
-    return datasets
+    return tuple(datasets)
 
 
 def assetPickerArray(numberOfIterations, numberOfAssets, totalAssets):

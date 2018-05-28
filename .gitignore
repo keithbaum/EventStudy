@@ -106,3 +106,6 @@ indice
 datosTransformadosARetornos
 indiceTransformadoARetornos
 datos
+regressors.npy
+datasets.pkl
+abnormalReturns.npy
