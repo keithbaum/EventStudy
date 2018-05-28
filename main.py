@@ -27,15 +27,16 @@ data = getReturnsDataframe(excelPath, sheetname, rawPickledDataPath, transformed
 index = getReturnsDataframe(indexExcelPath, indexSheetname, rawIndexPickledDataPath, transformedIndexPickledDataPath)
 
 #FOR DEBUG
-import pickle
-import numpy as np
-pkl_file = open('datasets.pkl', 'rb')
-datasets = pickle.load(pkl_file)
-pkl_file.close()
-regressors = np.load('regressors.npy')
+#import pickle
+#import numpy as np
+#pkl_file = open('datasets.pkl', 'rb')
+#datasets = pickle.load(pkl_file)
+#pkl_file.close()
+#regressors = np.load('regressors.npy')
 
-#datasets = pickDatasets(data, numberOfSamples, numberOfAssets, numberOfIterations)
-#regressors = performLinearRegressions(datasets, index, estimationWindow) #1000 x 100 x 2
+#FOR REAL
+datasets = pickDatasets(data, numberOfSamples, numberOfAssets, numberOfIterations)
+regressors = performLinearRegressions(datasets, index, estimationWindow) #1000 x 100 x 2
 
 statistics = Statistics( datasets, regressors, index, estimationWindow, eventWindow )
 T1=statistics.T1_statistic()
@@ -46,6 +47,9 @@ plt.plot(T1)
 plt.figure()
 plt.plot(T2)
 plt.show()
+
+statistics.describe( T1, 'T1')
+statistics.describe( T2, 'T2')
 
 print("Listo")
 

@@ -1,4 +1,5 @@
 import numpy as np
+import scipy.stats
 from regression import calculateAbnormalReturns
 from windows import generateSimpleWindow, getStartAndEndOfWindow
 
@@ -47,8 +48,9 @@ class Statistics( object ):
         crossTimeAverage = np.mean( np.power( abnormalReturns, 2 ), axis=2 )
 
         return crossTimeAverage
-    
 
-        
-
+    @staticmethod        
+    def describe( series, seriesName='' ):
+        print( "Estadistico %s" % seriesName )
+        print( scipy.stats.describe( series ) )
 
