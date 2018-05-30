@@ -11,31 +11,33 @@ class Statistics( object ):
         self.estimationWindow = estimationWindow
         self.eventWindow = eventWindow
 
-        self.abnormalReturns = calculateAbnormalReturns( datasets,
+        start,end = getStartAndEndOfWindow(eventWindow)
+        self.eventWindowSize = end-start+1
+
+        self.estimationAbnormalReturns = calculateAbnormalReturns( datasets,
                                                         marketIndex,
                                                         estimationWindow,
                                                         regressors)
-        t0,_ = getStartAndEndOfWindow(eventWindow)
-        self.t0AbnormalReturns = calculateAbnormalReturns( datasets,
+        self.eventAbnormalReturns = calculateAbnormalReturns( datasets,
                                                         marketIndex,
-                                                        generateSimpleWindow(t0,t0,len(eventWindow)),
+                                                        eventWindow,
                                                         regressors)
 
     def T1_statistic( self ):
         '''Asset cross-section mean excess return'''
-        AHat = self.crossSectionAverageAbnormalReturnOnWindow( self.abnormalReturns )
+        AHat = self.crossSectionAverageAbnormalReturnOnWindow( self.estimationAbnormalReturns )
         AHatSquared = np.power(AHat,2)
         S = np.sqrt( np.mean( AHatSquared, axis=1 ) )
-        A0 = self.crossSectionAverageAbnormalReturnOnWindow( self.t0AbnormalReturns )
+        eventCARs = np.sum( self.crossSectionAverageAbnormalReturnOnWindow( self.eventAbnormalReturns ), axis=1 )
 
-        return np.squeeze(A0)/S
+        return np.squeeze(eventCARs)/S/np.sqrt(self.eventWindowSize)
 
     def T2_statistic( self ):
         '''Mean standarized excess return'''
-        S = np.sqrt( self.crossTimeAverageSquaredAbnormalReturnOnWindow( self.abnormalReturns ) )
+        S = np.sqrt( self.crossTimeAverageSquaredAbnormalReturnOnWindow( self.estimationAbnormalReturns ) )
         numberOfAssets = len( self.datasets[0].columns ) 
-        A0 = self.t0AbnormalReturns
-        return np.mean( np.squeeze(A0)/S, axis=1 )*np.sqrt(numberOfAssets)
+        eventCARs = np.sum( self.eventAbnormalReturns, axis = 2 )
+        return np.mean( np.squeeze(eventCARs)/S/np.sqrt(self.eventWindowSize), axis=1 )*np.sqrt(numberOfAssets)
 
     @staticmethod
     def crossSectionAverageAbnormalReturnOnWindow( abnormalReturns ):
@@ -53,4 +55,13 @@ class Statistics( object ):
     def describe( series, seriesName='' ):
         print( "Estadistico %s" % seriesName )
         print( scipy.stats.describe( series ) )
+
+    @staticmethod
+    def errorTypeI( statistic, alpha):
+        sigma = np.std( statistic )
+        zAlphaBillateral = scipy.stats.norm.ppf( 1-alpha/2 )
+        thresholdForRejection = sigma * zAlphaBillateral
+        occurences = np.where( np.abs(statistic)>thresholdForRejection )[0]
+
+        return len(occurences)/len(statistic)
 

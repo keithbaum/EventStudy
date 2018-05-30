@@ -1,55 +1,48 @@
 from dataLoader import getReturnsDataframe
-from datasetPicker import pickDatasets
-from regression import performLinearRegressions
 from statistics import Statistics
-from windows import generateSimpleWindow
+from study import runStudy
 
-excelPath = '../TP1MNP_PreciosCierre.xlsx'
-sheetname= 'Precios'
-rawPickledDataPath = 'datos'
-transformedPickledDataPath = 'datosTransformadosARetornos'
-
-indexExcelPath = '../spx.xlsx'
-indexSheetname = 'Sheet1'
-rawIndexPickledDataPath = 'indice'
-transformedIndexPickledDataPath = 'indiceTransformadoARetornos'
-
-numberOfSamples = 260
-numberOfAssets = 100
-numberOfIterations = 1000
-estimationWindowSize = 250
-eventWindowSize = numberOfSamples - estimationWindowSize
-estimationWindow = generateSimpleWindow(0,estimationWindowSize-1,numberOfSamples)
-eventWindow = generateSimpleWindow(estimationWindowSize,numberOfSamples, numberOfSamples)
+import matplotlib
+import matplotlib.style
+matplotlib.use("Qt5Agg")
+matplotlib.style.use('classic')
+import matplotlib.pyplot as plt
 
 
-data = getReturnsDataframe(excelPath, sheetname, rawPickledDataPath, transformedPickledDataPath)
-index = getReturnsDataframe(indexExcelPath, indexSheetname, rawIndexPickledDataPath, transformedIndexPickledDataPath)
+def loadVariables():
+    excelPath = '../TP1MNP_PreciosCierre.xlsx'
+    sheetname= 'Precios'
+    rawPickledDataPath = 'datos'
+    transformedPickledDataPath = 'datosTransformadosARetornos'
 
-#FOR DEBUG
-#import pickle
-#import numpy as np
-#pkl_file = open('datasets.pkl', 'rb')
-#datasets = pickle.load(pkl_file)
-#pkl_file.close()
-#regressors = np.load('regressors.npy')
+    indexExcelPath = '../spx.xlsx'
+    indexSheetname = 'Sheet1'
+    rawIndexPickledDataPath = 'indice'
+    transformedIndexPickledDataPath = 'indiceTransformadoARetornos'
 
-#FOR REAL
-datasets = pickDatasets(data, numberOfSamples, numberOfAssets, numberOfIterations)
-regressors = performLinearRegressions(datasets, index, estimationWindow) #1000 x 100 x 2
+    data = getReturnsDataframe(excelPath, sheetname, rawPickledDataPath, transformedPickledDataPath)
+    index = getReturnsDataframe(indexExcelPath, indexSheetname, rawIndexPickledDataPath, transformedIndexPickledDataPath)
 
-statistics = Statistics( datasets, regressors, index, estimationWindow, eventWindow )
-T1=statistics.T1_statistic()
-T2=statistics.T2_statistic()
+    return (data, index)
 
-from matplotlib import pyplot as plt
-plt.plot(T1)
-plt.figure()
-plt.plot(T2)
+
+############################################################
+
+data, index = loadVariables()
+
+T1ErrorTypeIPoints= []
+T2ErrorTypeIPoints= []
+scenarios = [20,30,50,80,100,130,150,200]
+rejectAlpha=0.05
+for numberOfEvents in scenarios:
+    T1,T2 = runStudy( data, index, numberOfEvents )
+
+    T1ErrorTypeI = Statistics.errorTypeI( T1, rejectAlpha )
+    T2ErrorTypeI = Statistics.errorTypeI( T2, rejectAlpha )
+    T1ErrorTypeIPoints.append(T1ErrorTypeI)
+    T2ErrorTypeIPoints.append(T2ErrorTypeI)
+
+plt.scatter(scenarios, T1ErrorTypeIPoints, c='blue', label='T1')
+plt.scatter(scenarios, T2ErrorTypeIPoints, c='green', label='T2')
+plt.legend()
 plt.show()
-
-statistics.describe( T1, 'T1')
-statistics.describe( T2, 'T2')
-
-print("Listo")
-
