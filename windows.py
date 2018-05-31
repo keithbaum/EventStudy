@@ -11,7 +11,7 @@ def generateSimpleWindow(start, end, total_length):
     if end>total_length or start>end:
         raise Exception("invalid indexes")
     
-    window = np.zeros(total_length)
+    window = np.zeros(total_length,dtype=int)
     window[start:end+1] = 1
 
     return window

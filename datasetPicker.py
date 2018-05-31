@@ -30,3 +30,6 @@ def samplePickerArray(numberOfIterations, numberOfSamples, totalSamples):
         samplePicker[i,:] = np.arange(start, start+numberOfSamples)
 
     return samplePicker
+
+def preProcessMarketIndex( datasets, marketIndex ):
+    return np.squeeze( marketIndex.loc[ datasets[0].index ].values )

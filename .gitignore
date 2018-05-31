@@ -109,3 +109,4 @@ datos
 regressors.npy
 datasets.pkl
 abnormalReturns.npy
+.DS_Store

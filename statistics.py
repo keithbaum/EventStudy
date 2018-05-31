@@ -7,7 +7,6 @@ class Statistics( object ):
     def __init__( self, datasets, regressors, marketIndex, estimationWindow, eventWindow):
         self.datasets = datasets
         self.regressors = regressors
-        self.marketIndex = marketIndex
         self.estimationWindow = estimationWindow
         self.eventWindow = eventWindow
 
@@ -38,6 +37,15 @@ class Statistics( object ):
         numberOfAssets = len( self.datasets[0].columns ) 
         eventCARs = np.sum( self.eventAbnormalReturns, axis = 2 )
         return np.mean( np.squeeze(eventCARs)/S/np.sqrt(self.eventWindowSize), axis=1 )*np.sqrt(numberOfAssets)
+
+    def Rank_statistic( self ):
+        abnormalReturns = np.concatenate( ( self.estimationAbnormalReturns, self.eventAbnormalReturns ), axis = 2 )
+        rankMatrix = np.argsort( abnormalReturns, axis=2 )
+        rankMean = ( rankMatrix.shape[2] - 1 )/2
+        S = np.sqrt( np.mean( np.power( np.mean( rankMatrix - rankMean, axis=1 ), 2) ) )
+        cummulativeRankInEventWindow = np.sum( np.mean( rankMatrix[:,:,self.eventWindow]-rankMean, axis=1 ),axis=1)
+        return cummulativeRankInEventWindow/S/np.sqrt(self.eventWindowSize)
+
 
     @staticmethod
     def crossSectionAverageAbnormalReturnOnWindow( abnormalReturns ):

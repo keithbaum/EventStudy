@@ -7,6 +7,9 @@ import matplotlib.style
 matplotlib.use("Qt5Agg")
 matplotlib.style.use('classic')
 import matplotlib.pyplot as plt
+from matplotlib.pyplot import cm
+
+import numpy as np
 
 
 def loadVariables():
@@ -30,19 +33,19 @@ def loadVariables():
 
 data, index = loadVariables()
 
-T1ErrorTypeIPoints= []
-T2ErrorTypeIPoints= []
+
 scenarios = [20,30,50,80,100,130,150,200]
-rejectAlpha=0.05
+rejectAlpha = 0.05
+
+results = []
 for numberOfEvents in scenarios:
-    T1,T2 = runStudy( data, index, numberOfEvents )
+    statistics = runStudy( data, index, numberOfEvents )
+    errorsTypeI = [ Statistics.errorTypeI( statistic, rejectAlpha ) for statistic in statistics ]
+    results.append ( errorsTypeI )
 
-    T1ErrorTypeI = Statistics.errorTypeI( T1, rejectAlpha )
-    T2ErrorTypeI = Statistics.errorTypeI( T2, rejectAlpha )
-    T1ErrorTypeIPoints.append(T1ErrorTypeI)
-    T2ErrorTypeIPoints.append(T2ErrorTypeI)
+color=iter(cm.rainbow(np.linspace(0,1,len(results))))
+for i,errorI in enumerate(results):
+    plt.scatter( scenarios, errorI, label ="T%s"%i, c=next(color) )
 
-plt.scatter(scenarios, T1ErrorTypeIPoints, c='blue', label='T1')
-plt.scatter(scenarios, T2ErrorTypeIPoints, c='green', label='T2')
 plt.legend()
 plt.show()

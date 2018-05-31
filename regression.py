@@ -8,38 +8,28 @@ from windows import getStartAndEndOfWindow
 def _linear(x,alpha,beta):
     return alpha + beta * x
 
-def performLinearRegressions(datasets, index, estimationWindow):
+def performLinearRegressions(datasets, marketIndex, estimationWindow):
     regressors = np.empty((len(datasets),len(datasets[0].columns),2))
-    startOfWindow,endOfWindow = getStartAndEndOfWindow(estimationWindow)
     for i,iteration in enumerate(datasets):
-        x = index.loc[ iteration.index ][startOfWindow:endOfWindow+1].values[:,0]
+        y = iteration.values[ estimationWindow.nonzero() ]
+        x = marketIndex[estimationWindow.nonzero()]
         for assetNumber in range(len(datasets[0].columns)):
             # OLS result params are [alpha beta]
-            regressors[i,assetNumber,:] = curve_fit(_linear, x, iteration.iloc[:,assetNumber][startOfWindow:endOfWindow+1].values)[0]
+            regressors[i,assetNumber,:] = curve_fit(_linear, x, y[ :,assetNumber ])[0]
 
     return regressors
 
-def calculateAbnormalReturns(datasets, marketIndex, eventWindow, regressors):
-
-    if not datasets:
-        return []
-    sampleSize = len(datasets[0])
+def calculateAbnormalReturns(datasets, marketIndex, window, regressors):
     numberOfAssets = len( datasets[0].columns) 
-    if sampleSize != len(eventWindow):
-        return []
-
     numberOfIterations = len(datasets)
-    startOfWindow,endOfWindow = getStartAndEndOfWindow(eventWindow)
-    nonzeroEventWindowSize = endOfWindow - startOfWindow + 1
+    nonzeroWindowSize = len( window.nonzero()[0] )
 
-    abnormalReturns = np.empty((numberOfIterations,numberOfAssets,nonzeroEventWindowSize))
+    abnormalReturns = np.empty((numberOfIterations,numberOfAssets,nonzeroWindowSize))
     for iterationCount, iteration in enumerate( regressors ):
-        vectorIndexes = datasets[iterationCount].index[startOfWindow:endOfWindow+1]
-        marketIndexValues = marketIndex.loc[ vectorIndexes ].iloc[:, 0].values
-        currentIteration = datasets[iterationCount]
+        currentIteration = datasets[iterationCount].values
         for assetNumber, coefficients in enumerate( iteration ):
-            eventWindowValues = ( currentIteration.iloc[:,assetNumber].values*eventWindow )[startOfWindow:endOfWindow+1]
-            abnormalReturn = eventWindowValues - ( coefficients[0] + coefficients[1]*marketIndexValues )
+            windowValues = currentIteration[window.nonzero(),assetNumber]
+            abnormalReturn = windowValues - ( coefficients[0] + coefficients[1]*marketIndex[window.nonzero()] )
             abnormalReturns[iterationCount,assetNumber,:]= abnormalReturn
 
     return abnormalReturns
