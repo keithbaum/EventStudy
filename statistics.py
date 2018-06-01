@@ -47,12 +47,10 @@ class Statistics( object ):
         return cummulativeRankInEventWindow/S/np.sqrt(self.eventWindowSize)
 
     def Sign_statistic(self):
-        abnormalReturns = np.concatenate((self.estimationAbnormalReturns, self.eventAbnormalReturns), axis=2)
-        signMatrix = np.sign( abnormalReturns )
-        absAbnormalReturns = np.abs( abnormalReturns )
-        rankMatrix = np.argsort(absAbnormalReturns, axis=2)
-        signedRankMatrix = rankMatrix*signMatrix
-        return np.sum( signedRankMatrix, axis=2 )/np.sqrt( np.sum( np.power( signedRankMatrix, 2), axis=2 ) )
+        signMatrix = np.sign( self.eventAbnormalReturns )
+        positiveCount = np.sum( np.count_nonzero( signMatrix == 1,axis=1), axis=1 )
+        N = signMatrix.size/signMatrix.shape[0]
+        return (positiveCount/N - 0.5)*np.sqrt(N)/0.5
 
 
 
@@ -75,6 +73,15 @@ class Statistics( object ):
 
     @staticmethod
     def errorTypeI( statistic, alpha):
+        sigma = np.std( statistic )
+        zAlphaBillateral = scipy.stats.norm.ppf( 1-alpha/2 )
+        thresholdForRejection = sigma * zAlphaBillateral
+        occurences = np.where( np.abs(statistic)>thresholdForRejection )[0]
+
+        return len(occurences)/len(statistic)
+
+    @staticmethod
+    def errorTypeII( statistic, alpha):
         sigma = np.std( statistic )
         zAlphaBillateral = scipy.stats.norm.ppf( 1-alpha/2 )
         thresholdForRejection = sigma * zAlphaBillateral

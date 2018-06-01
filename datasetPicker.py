@@ -1,5 +1,4 @@
 import numpy as np
-import pandas as pd
 
 def pickDatasets( df, numberOfSamples, numberOfAssets, numberOfIterations ):
     totalAssets = len( df.columns )

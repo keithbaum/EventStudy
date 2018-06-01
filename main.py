@@ -39,22 +39,20 @@ def calculateErrorTypeI( scenarios, data, index, rejectAlpha):
     return results
 
 def calculateErrorTypeII( scenarios, data, index, rejectAlpha, errorTypeIIParameters):
-    results = []
-    for numberOfEvents in scenarios:
-        statistics = runStudy(data, index, numberOfEvents, errorTypeIIParameters)
-        #This needs to be fixed because statistics is now going to be multidimensional
-        errorsTypeII = [ Statistics.errorTypeII(statistic, rejectAlpha) for statistic in statistics ]
-        results.append(errorsTypeII)
+     results = []
+     for numberOfEvents in scenarios:
+         statistics = runStudy(data, index, numberOfEvents, errorTypeIIParameters)
+         #This needs to be fixed because statistics is now going to be multidimensional
+         errorsTypeII = [ Statistics.errorTypeII(statistic, rejectAlpha) for statistic in statistics ]
+         results.append(errorsTypeII)
 
-    results = np.array(results).T.tolist()
-    return results
-
-############################################################
+     results = np.array(results).T.tolist()
+     return results
 
 data, index = loadVariables()
 
 
-scenarios = [20,30,50,80,100,130,150,200]
+scenarios = [20,30,50,80,100]#,130,150,200]
 rejectAlpha = 0.05
 errorTypeIIParameters = {'lambdas':[ 0.1, 1, 10 ], 'etas':[ 0.5, 1, 2 ]}
 
@@ -66,7 +64,7 @@ for i, error in enumerate(results):
 plt.legend()
 plt.show()
 
-results = calculateErrorTypeII( [100], data, index, rejectAlpha, errorTypeIIParameters )
+# results = calculateErrorTypeII( [100], data, index, rejectAlpha, errorTypeIIParameters )
 
 
 
