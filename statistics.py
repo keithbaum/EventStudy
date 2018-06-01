@@ -1,7 +1,7 @@
 import numpy as np
 import scipy.stats
 from regression import calculateAbnormalReturns
-from windows import generateSimpleWindow, getStartAndEndOfWindow
+from windows import getStartAndEndOfWindow
 
 class Statistics( object ):
     def __init__( self, datasets, regressors, marketIndex, estimationWindow, eventWindow):
@@ -42,9 +42,18 @@ class Statistics( object ):
         abnormalReturns = np.concatenate( ( self.estimationAbnormalReturns, self.eventAbnormalReturns ), axis = 2 )
         rankMatrix = np.argsort( abnormalReturns, axis=2 )
         rankMean = ( rankMatrix.shape[2] - 1 )/2
-        S = np.sqrt( np.mean( np.power( np.mean( rankMatrix - rankMean, axis=1 ), 2) ) )
-        cummulativeRankInEventWindow = np.sum( np.mean( rankMatrix[:,:,self.eventWindow]-rankMean, axis=1 ),axis=1)
+        S = np.sqrt( np.mean( np.power( np.mean( rankMatrix - rankMean, axis=1 ), 2), axis=1 ) )
+        cummulativeRankInEventWindow = np.sum( np.mean( rankMatrix[:,:,self.eventWindow.nonzero()[0]]-rankMean, axis=1 ),axis=1)
         return cummulativeRankInEventWindow/S/np.sqrt(self.eventWindowSize)
+
+    def Sign_statistic(self):
+        abnormalReturns = np.concatenate((self.estimationAbnormalReturns, self.eventAbnormalReturns), axis=2)
+        signMatrix = np.sign( abnormalReturns )
+        absAbnormalReturns = np.abs( abnormalReturns )
+        rankMatrix = np.argsort(absAbnormalReturns, axis=2)
+        signedRankMatrix = rankMatrix*signMatrix
+        return np.sum( signedRankMatrix, axis=2 )/np.sqrt( np.sum( np.power( signedRankMatrix, 2), axis=2 ) )
+
 
 
     @staticmethod

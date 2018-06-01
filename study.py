@@ -29,5 +29,6 @@ def runStudy( data, marketIndex, numberOfAssets=100 ):
     T1=statistics.T1_statistic()
     T2=statistics.T2_statistic()
     rankStatistic = statistics.Rank_statistic()
+    signStatistic = statistics.Sign_statistic()
 
-    return (T1,T2, rankStatistic)
+    return (T1,T2, rankStatistic, signStatistic)

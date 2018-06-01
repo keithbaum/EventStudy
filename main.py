@@ -46,7 +46,7 @@ for numberOfEvents in scenarios:
 results = np.array(results).T.tolist()
 color=iter(cm.rainbow(np.linspace(0,1,len(results))))
 for i,errorI in enumerate(results):
-    plt.scatter( scenarios, errorI, label ="T%s"%i+1, c=next(color) )
+    plt.scatter( scenarios, errorI, label ="T%s"%str(i+1), c=next(color) )
 
 plt.legend()
 plt.show()
