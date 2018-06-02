@@ -32,3 +32,12 @@ def samplePickerArray(numberOfIterations, numberOfSamples, totalSamples):
 
 def preProcessMarketIndex( datasets, marketIndex ):
     return np.squeeze( marketIndex.loc[ datasets[0].index ].values )
+
+def DFlistToArray(datasets):
+    if isinstance(datasets, np.ndarray):
+        return datasets
+
+    values = np.empty((len(datasets),len(datasets[0].columns),len(datasets[0].index)))
+    for i,iteration in enumerate(datasets):
+        values[i,:,:] = iteration.values.T
+    return values

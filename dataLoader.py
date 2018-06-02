@@ -31,3 +31,19 @@ def getReturnsDataframe(excelPath, sheetname, rawPath, transformedDataPath):
         transformed.to_pickle(transformedDataPath)
 
     return pd.read_pickle(transformedDataPath)
+
+
+def loadVariables():
+    excelPath = '../TP1MNP_PreciosCierre.xlsx'
+    sheetname= 'Precios'
+    rawPickledDataPath = 'datos'
+    transformedPickledDataPath = 'datosTransformadosARetornos'
+
+    indexExcelPath = '../spx.xlsx'
+    indexSheetname = 'Sheet1'
+    rawIndexPickledDataPath = 'indice'
+    transformedIndexPickledDataPath = 'indiceTransformadoARetornos'
+
+    data = getReturnsDataframe(excelPath, sheetname, rawPickledDataPath, transformedPickledDataPath)
+    index = getReturnsDataframe(indexExcelPath, indexSheetname, rawIndexPickledDataPath, transformedIndexPickledDataPath)
+    return (data, index)

@@ -1,4 +1,4 @@
-from datasetPicker import pickDatasets, preProcessMarketIndex
+from datasetPicker import pickDatasets, preProcessMarketIndex, DFlistToArray
 from regression import performLinearRegressions
 from statistics import Statistics
 from windows import generateSimpleWindow
@@ -22,10 +22,11 @@ def runStudy( data, marketIndex, numberOfAssets=100, errorTypeIIParameters=None 
     #regressors = np.load('regressors.npy')
 
     #FOR REAL
-    datasets = pickDatasets(data, numberOfSamples, numberOfAssets, numberOfIterations) #1000 x 100 x 260
+    datasetsDF = pickDatasets(data, numberOfSamples, numberOfAssets, numberOfIterations) #1000 x 100 x 260
+    marketIndex = preProcessMarketIndex( datasetsDF, marketIndex )
+    datasets = DFlistToArray( datasetsDF )
     if errorTypeIIParameters:
-        datasets=addEvent(datasets, errorTypeIIParameters, eventWindow)
-    marketIndex = preProcessMarketIndex( datasets, marketIndex )
+        datasets=addEvent(datasets, errorTypeIIParameters, eventWindow, estimationWindow)
     regressors = performLinearRegressions(datasets, marketIndex, estimationWindow) #1000 x 100 x 2
 
     T1,T2,rankStatistic,signStatistic = calculateStatistics(datasets, estimationWindow, eventWindow, marketIndex,

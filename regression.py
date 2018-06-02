@@ -1,35 +1,35 @@
 from scipy.optimize import curve_fit
 import numpy as np
 from numba import jit
-from functools import lru_cache
-from windows import getStartAndEndOfWindow
 
 @jit
 def _linear(x,alpha,beta):
     return alpha + beta * x
 
+@jit
 def performLinearRegressions(datasets, marketIndex, estimationWindow):
-    regressors = np.empty((len(datasets),len(datasets[0].columns),2))
-    for i,iteration in enumerate(datasets):
-        y = iteration.values[ estimationWindow.nonzero() ]
-        x = marketIndex[estimationWindow.nonzero()]
-        for assetNumber in range(len(datasets[0].columns)):
+    regressors = np.empty((datasets.shape[0],datasets.shape[1],2))
+    for iteration in range(datasets.shape[0]):
+        y = datasets[ iteration, :, estimationWindow.nonzero()[0] ]
+        x = marketIndex[ estimationWindow.nonzero()[0] ]
+        for assetNumber in range(datasets.shape[1]):
             # OLS result params are [alpha beta]
-            regressors[i,assetNumber,:] = curve_fit(_linear, x, y[ :,assetNumber ])[0]
+            regressors[iteration,assetNumber,:] = curve_fit(_linear, x, y[ :,assetNumber ])[0]
 
     return regressors
 
+@jit
 def calculateAbnormalReturns(datasets, marketIndex, window, regressors):
-    numberOfAssets = len( datasets[0].columns) 
-    numberOfIterations = len(datasets)
+    numberOfAssets = datasets.shape[1]
+    numberOfIterations = datasets.shape[0]
     nonzeroWindowSize = len( window.nonzero()[0] )
 
     abnormalReturns = np.empty((numberOfIterations,numberOfAssets,nonzeroWindowSize))
-    for iterationCount, iteration in enumerate( regressors ):
-        currentIteration = datasets[iterationCount].values
-        for assetNumber, coefficients in enumerate( iteration ):
-            windowValues = currentIteration[window.nonzero(),assetNumber]
-            abnormalReturn = windowValues - ( coefficients[0] + coefficients[1]*marketIndex[window.nonzero()] )
-            abnormalReturns[iterationCount,assetNumber,:]= abnormalReturn
+    for iterationCount in range( regressors.shape[0] ):
+        currentIteration = datasets[iterationCount,:,:]
+        for assetNumber in range( currentIteration.shape[0] ):
+             windowValues = currentIteration[assetNumber,window.nonzero()[0]]
+             abnormalReturn = windowValues - ( regressors[iterationCount,assetNumber,0] + regressors[iterationCount,assetNumber,1]*marketIndex[window.nonzero()[0]] )
+             abnormalReturns[iterationCount,assetNumber,:]= abnormalReturn
 
     return abnormalReturns

@@ -14,4 +14,4 @@ def generateSimpleWindow(start, end, total_length):
     window = np.zeros(total_length,dtype=int)
     window[start:end+1] = 1
 
-    return window
+    return np.array(window)
