@@ -10,14 +10,13 @@ class Statistics( object ):
         self.eventWindow = eventWindow
         self.eventWindowSize = np.count_nonzero(eventWindow)
 
-        self.estimationAbnormalReturns = calculateAbnormalReturns( datasets,
+        self.abnormalReturns = calculateAbnormalReturns( datasets,
                                                         marketIndex,
-                                                        estimationWindow,
-                                                        regressors)
-        self.eventAbnormalReturns = calculateAbnormalReturns( datasets,
-                                                        marketIndex,
-                                                        eventWindow,
-                                                        regressors)
+                                                        ( estimationWindow + eventWindow ),
+                                                        regressors )
+
+        self.estimationAbnormalReturns = self.abnormalReturns[:,:,self.eventWindow.nonzero()[0]]
+        self.eventAbnormalReturns = self.abnormalReturns[:,:,self.estimationWindow.nonzero()[0]]
 
     def T1_statistic( self ):
         '''Asset cross-section mean excess return'''
@@ -36,12 +35,11 @@ class Statistics( object ):
         return np.mean( np.squeeze(eventCARs)/S/np.sqrt(self.eventWindowSize), axis=1 )*np.sqrt(numberOfAssets)
 
     def Rank_statistic( self ):
-        abnormalReturns = np.concatenate( ( self.estimationAbnormalReturns, self.eventAbnormalReturns ), axis = 2 )
-        rankMatrix = np.argsort( abnormalReturns, axis=2 )
+        rankMatrix = np.argsort( self.abnormalReturns, axis=2 )
         rankMean = ( rankMatrix.shape[2] - 1 )/2
-        S = np.sqrt( np.mean( np.power( np.mean( rankMatrix - rankMean, axis=1 ), 2), axis=1 ) )
-        cummulativeRankInEventWindow = np.mean( rankMatrix[:,:,self.eventWindow.nonzero()[0][0]]-rankMean, axis=1 )
-        return cummulativeRankInEventWindow/S
+        S = np.sqrt( np.mean( np.power( np.mean( rankMatrix[:,:,self.eventWindow.nonzero()[0]] - rankMean, axis=1 ), 2), axis=1 ) )
+        cummulativeRankInEventWindow = np.sum( np.mean( rankMatrix[:,:,self.eventWindow.nonzero()[0]]-rankMean, axis=1 ), axis=1 )
+        return cummulativeRankInEventWindow/S/np.sqrt( self.eventWindowSize )
 
     def Sign_statistic(self):
         signMatrix = np.sign( self.eventAbnormalReturns )

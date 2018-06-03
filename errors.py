@@ -1,4 +1,5 @@
 import numpy as np
+import pandas as pd
 from statistics import Statistics
 from study import runStudy
 from events import eventTypeIIParameters
@@ -30,6 +31,10 @@ def calculateErrorTypeII( scenarios, data, index, rejectAlpha, errorTypeIIParame
                  errorsTypeII = [ Statistics.errorTypeII(statistic, rejectAlpha) for statistic in statistics ]
                  results[(eta,Lambda)]= errorsTypeII
      return results
+
+
+def resultsDictAsDF(resultsDict):
+    return pd.DataFrame(columns=['eta,lambda','T1','T2','Rank','Sign'],data=[ [k]+v for k,v in resultsDict.items()])
 
 def plotResults(scenarios, results):
     color = iter(cm.rainbow(np.linspace(0, 1, len(results))))
