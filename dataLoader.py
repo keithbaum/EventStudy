@@ -46,4 +46,4 @@ def loadVariables():
 
     data = getReturnsDataframe(excelPath, sheetname, rawPickledDataPath, transformedPickledDataPath)
     index = getReturnsDataframe(indexExcelPath, indexSheetname, rawIndexPickledDataPath, transformedIndexPickledDataPath)
-    return (data, index)
+    return (data.values.T, np.squeeze(index.values))

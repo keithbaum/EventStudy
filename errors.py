@@ -37,8 +37,8 @@ def resultsDictAsDF(resultsDict):
     return pd.DataFrame(columns=['eta,lambda','T1','T2','Rank','Sign'],data=[ [k]+v for k,v in resultsDict.items()])
 
 def plotResults(scenarios, results):
-    color = iter(cm.rainbow(np.linspace(0, 1, len(results))))
+    color = cm.viridis(np.linspace(0, 1, len(results)))
     for i, error in enumerate(results):
-        plt.scatter(scenarios, error, label="T%s" % str(i + 1), c=next(color))
+        plt.scatter(scenarios, error, label="T%s" % str(i + 1), c=color[i])
     plt.legend()
     plt.show()

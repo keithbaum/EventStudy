@@ -1,37 +1,48 @@
 import numpy as np
 
-def pickDatasets( df, numberOfSamples, numberOfAssets, numberOfIterations ):
-    totalAssets = len( df.columns )
-    totalSamples = len( df.index )
+def datasetPick( data, numberOfSamples, numberOfAssets, numberOfIterations ):
+    totalAssets = data.shape[0]
+    totalSamples = data.shape[1]
 
-    assetPicker = assetPickerArray(numberOfIterations, numberOfAssets, totalAssets)
-    samplePicker = samplePickerArray(numberOfIterations, numberOfSamples, totalSamples)
+    assetPickerArray = assetPicker(numberOfIterations, numberOfAssets, totalAssets)
+    samplePickerArray = samplePicker(numberOfIterations, numberOfAssets, numberOfSamples, totalSamples)
 
-    datasets = []
-    for i in range(numberOfIterations):
-        datasets.append( df.iloc[ samplePicker[i], assetPicker[i] ] )
+    values = np.empty((numberOfIterations, numberOfAssets, numberOfSamples))
+    for iteration in range(numberOfIterations):
+        for assetNumber in range(numberOfAssets):
+            values[iteration,assetNumber,:]= data[ assetPickerArray[iteration,assetNumber], samplePickerArray[iteration,assetNumber] ]
 
-    return datasets
+    return ( values, samplePickerArray)
 
 
-def assetPickerArray(numberOfIterations, numberOfAssets, totalAssets):
-    assetPicker = np.empty((numberOfIterations, numberOfAssets))
+def assetPicker(numberOfIterations, numberOfAssets, totalAssets):
+    assetPicker = np.empty((numberOfIterations, numberOfAssets), dtype=int)
     for i in range(numberOfIterations):
         assetPicker[i, :] = np.random.choice(range(totalAssets), numberOfAssets, replace=False)
 
     return assetPicker
 
-def samplePickerArray(numberOfIterations, numberOfSamples, totalSamples):
-    samplePicker = np.empty((numberOfIterations, numberOfSamples))
+def samplePicker(numberOfIterations, numberOfAssets, numberOfSamples, totalSamples):
+    samplePickerArray = np.empty((numberOfIterations, numberOfAssets, numberOfSamples), dtype=int)
+    for iteration in range(numberOfIterations):
+        for assetNumber in range(numberOfAssets):
+            samplePickerArray[iteration, assetNumber,:] = singleSamplePicker(numberOfSamples, totalSamples)
+
+    return samplePickerArray
+
+def singleSamplePicker(numberOfSamples, totalSamples):
     highestStartSample = totalSamples - numberOfSamples
-    for i in range(numberOfIterations):
-        start = np.random.randint( 0, highestStartSample, 1, int)
-        samplePicker[i,:] = np.arange(start, start+numberOfSamples)
+    start = np.random.randint( 0, highestStartSample, 1, dtype=int)
+    samplePicker = np.arange(start, start+numberOfSamples)
 
     return samplePicker
 
-def preProcessMarketIndex( datasets, marketIndex ):
-    return np.squeeze( marketIndex.loc[ datasets[0].index ].values )
+def preProcessMarketIndex( samplesToPickFromIndex, marketIndex ):
+    result = np.empty( samplesToPickFromIndex.shape )
+    for iteration in range( samplesToPickFromIndex.shape[0] ):
+        for numberOfAsset in range(samplesToPickFromIndex.shape[1]):
+            result[iteration,numberOfAsset,:] = marketIndex[samplesToPickFromIndex[iteration, numberOfAsset,:]]
+    return result
 
 def DFlistToArray(datasets):
     if isinstance(datasets, np.ndarray):

@@ -13,8 +13,3 @@ plotResults(scenarios, results)
 
 resultsDict = calculateErrorTypeII( [100], data, index, rejectAlpha, errorTypeIIParameters )
 print( resultsDictAsDF(resultsDict).to_string() )
-
-
-
-
-
