@@ -4,7 +4,7 @@ from errors import calculateErrorTypeI, calculateErrorTypeII, plotResults, resul
 data, index = loadVariables()
 
 
-scenarios = [50,100,150,200]
+scenarios = [10,20,30,40]#[50,100,150,200]
 errorTypeIIParameters = {'lambdas':[ 0.1, 1, 10 ], 'etas':[ 0.5, 1, 2 ]}
 rejectAlpha = 0.05
 

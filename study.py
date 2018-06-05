@@ -28,10 +28,10 @@ def runStudy( data, marketIndex, numberOfAssets=100, errorTypeIIParameters=None 
         datasets=addEvent(datasets, errorTypeIIParameters, eventWindow, estimationWindow)
     regressors = performLinearRegressions(datasets, marketIndex, estimationWindow) #1000 x 100 x 2
 
-    T1,T2,rankStatistic,signStatistic = calculateStatistics(datasets, estimationWindow, eventWindow, marketIndex,
+    statisticsDict = calculateStatistics(datasets, estimationWindow, eventWindow, marketIndex,
                                                                regressors)
 
-    return (T1,T2, rankStatistic, signStatistic)
+    return statisticsDict
 
 
 def calculateStatistics(datasets, estimationWindow, eventWindow, marketIndex, regressors):
@@ -40,4 +40,7 @@ def calculateStatistics(datasets, estimationWindow, eventWindow, marketIndex, re
     T2 = statistics.T2_statistic()
     rankStatistic = statistics.Rank_statistic()
     signStatistic = statistics.Sign_statistic()
-    return T1, T2, rankStatistic, signStatistic
+    return {'T1':T1,
+            'T2':T2,
+            'rank':rankStatistic,
+            'sign':signStatistic}

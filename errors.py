@@ -14,7 +14,7 @@ def calculateErrorTypeI( scenarios, data, index, rejectAlpha):
     results = []
     for numberOfEvents in scenarios:
         statistics = runStudy(data, index, numberOfEvents)
-        errorsTypeI = [Statistics.errorTypeI(statistic, rejectAlpha) for statistic in statistics]
+        errorsTypeI = [Statistics.errorTypeI(statistic, rejectAlpha, statisticType) for statisticType,statistic in statistics.items()]
         results.append(errorsTypeI)
 
     results = np.array(results).T.tolist()
@@ -28,7 +28,7 @@ def calculateErrorTypeII( scenarios, data, index, rejectAlpha, errorTypeIIParame
              for numberOfEvents in scenarios:
                  statistics = runStudy(data, index, numberOfEvents, eventTypeIIParameters(eta,Lambda))
                  #This needs to be fixed because statistics is now going to be multidimensional
-                 errorsTypeII = [ Statistics.errorTypeII(statistic, rejectAlpha) for statistic in statistics ]
+                 errorsTypeII = [Statistics.errorTypeII(statistic, rejectAlpha, statisticType) for statisticType,statistic in statistics.items()]
                  results[(eta,Lambda)]= errorsTypeII
      return results
 
@@ -37,8 +37,9 @@ def resultsDictAsDF(resultsDict):
     return pd.DataFrame(columns=['eta,lambda','T1','T2','Rank','Sign'],data=[ [k]+v for k,v in resultsDict.items()])
 
 def plotResults(scenarios, results):
-    color = cm.viridis(np.linspace(0, 1, len(results)))
+    color = iter(plt.get_cmap('jet')(np.linspace(0, 1, len(results))))
     for i, error in enumerate(results):
-        plt.scatter(scenarios, error, label="T%s" % str(i + 1), c=color[i])
+        c=next(color)
+        plt.scatter(scenarios, error, label="T%s" % str(i + 1), color=c)
     plt.legend()
     plt.show()

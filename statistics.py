@@ -3,6 +3,17 @@ import scipy.stats
 from regression import calculateAbnormalReturns
 
 class Statistics( object ):
+
+    UNILATERAL = lambda x: 1-x
+    BILATERAL = lambda x: 1-x/2
+
+    TEST_TYPE = {
+                    'T1'    : BILATERAL,
+                    'T2'    : BILATERAL,
+                    'rank'  : BILATERAL,
+                    'sign'  : BILATERAL,
+    }
+
     def __init__( self, datasets, regressors, marketIndex, estimationWindow, eventWindow):
         self.datasets = datasets
         self.regressors = regressors
@@ -67,19 +78,19 @@ class Statistics( object ):
         print( scipy.stats.describe( series ) )
 
     @staticmethod
-    def errorTypeI( statistic, alpha):
+    def errorTypeI( statistic, alpha, statisticType):
         sigma = np.std( statistic )
-        zAlphaBillateral = scipy.stats.norm.ppf( 1-alpha/2 )
-        thresholdForRejection = sigma * zAlphaBillateral
+        zAlpha = scipy.stats.norm.ppf( Statistics.TEST_TYPE[statisticType](alpha) )
+        thresholdForRejection = sigma * zAlpha
         occurences = np.where( np.abs(statistic)>thresholdForRejection )[0]
 
         return len(occurences)/len(statistic)
 
     @staticmethod
-    def errorTypeII( statistic, alpha):
+    def errorTypeII( statistic, alpha, statisticType):
         sigma = np.std( statistic )
-        zAlphaBillateral = scipy.stats.norm.ppf( 1-alpha/2 )
-        thresholdForRejection = sigma * zAlphaBillateral
+        zAlpha = scipy.stats.norm.ppf( Statistics.TEST_TYPE[statisticType](alpha) )
+        thresholdForRejection = sigma * zAlpha
         occurences = np.where( np.abs(statistic)<thresholdForRejection )[0]
 
         return len(occurences)/len(statistic)
