@@ -1,6 +1,5 @@
 import numpy as np
 import scipy.stats
-from regression import calculateAbnormalReturns
 
 class Statistics( object ):
 
@@ -14,18 +13,13 @@ class Statistics( object ):
                     'sign'  : BILATERAL,
     }
 
-    def __init__( self, datasets, regressors, marketIndex, estimationWindow, eventWindow):
+    def __init__( self, datasets, abnormalReturns, estimationWindow, eventWindow):
         self.datasets = datasets
-        self.regressors = regressors
         self.estimationWindow = estimationWindow
         self.eventWindow = eventWindow
         self.eventWindowSize = np.count_nonzero(eventWindow)
 
-        self.abnormalReturns = calculateAbnormalReturns( datasets,
-                                                        marketIndex,
-                                                        ( estimationWindow + eventWindow ),
-                                                        regressors )
-
+        self.abnormalReturns = abnormalReturns
         self.estimationAbnormalReturns = self.abnormalReturns[:,:,self.eventWindow.nonzero()[0]]
         self.eventAbnormalReturns = self.abnormalReturns[:,:,self.estimationWindow.nonzero()[0]]
 
@@ -45,14 +39,14 @@ class Statistics( object ):
         eventCARs = np.sum( self.eventAbnormalReturns, axis = 2 )
         return np.mean( np.squeeze(eventCARs)/S/np.sqrt(self.eventWindowSize), axis=1 )*np.sqrt(numberOfAssets)
 
-    def Rank_statistic( self ):
+    def rank_statistic( self ):
         rankMatrix = np.argsort( self.abnormalReturns, axis=2 )
         rankMean = ( rankMatrix.shape[2] - 1 )/2
         S = np.sqrt( np.mean( np.power( np.mean( rankMatrix[:,:,self.eventWindow.nonzero()[0]] - rankMean, axis=1 ), 2), axis=1 ) )
         cummulativeRankInEventWindow = np.sum( np.mean( rankMatrix[:,:,self.eventWindow.nonzero()[0]]-rankMean, axis=1 ), axis=1 )
-        return cummulativeRankInEventWindow/S/np.sqrt( self.eventWindowSize )
+        return cummulativeRankInEventWindow/S/np.sqrt(self.eventWindowSize)
 
-    def Sign_statistic(self):
+    def sign_statistic(self):
         signMatrix = np.sign( self.eventAbnormalReturns )
         positiveCount = np.sum( np.count_nonzero( signMatrix == 1,axis=1), axis=1 )
         N = signMatrix.size/signMatrix.shape[0]
